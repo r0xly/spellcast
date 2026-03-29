@@ -3,9 +3,12 @@ import type { Letter } from "../controllers/letter-grid-controller";
 type LetterGridLinesProps = 
 {
     selectedLetters: Letter[];
+    visible: boolean,
+    color: string,
 };
 
-export const LetterGridLines = ({ selectedLetters }: LetterGridLinesProps) => {
+export const LetterGridLines = ({ selectedLetters, visible, color }: LetterGridLinesProps) => 
+{
     const CELL_SIZE = 64;
     const GAP = 16;
 
@@ -27,7 +30,7 @@ export const LetterGridLines = ({ selectedLetters }: LetterGridLinesProps) => {
                 x2={endX}
                 y2={endY}
                 //stroke="oklch(58.5% 0.233 277.117)"
-                stroke="white"
+                stroke={color}
                 strokeWidth={10}
                 strokeLinecap="round"
             />
@@ -35,7 +38,7 @@ export const LetterGridLines = ({ selectedLetters }: LetterGridLinesProps) => {
     });
 
     return (
-        <svg className="absolute top-0 left-0 w-full h-full pointer-events-none p-4 trans">
+        <svg className={`absolute top-0 left-0 w-full h-full pointer-events-none p-4 ${!visible ? "opacity-0" : ""}`}>
             {lines}
         </svg>
     );

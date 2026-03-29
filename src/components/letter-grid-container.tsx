@@ -12,14 +12,6 @@ type LetterGridContainerProps =
     setPoints: (word: number) => void;
 } 
 
-const isAdjacent = (a: Letter, b: Letter) => 
-{
-    const rowDiff = Math.abs(a.x- b.x);
-    const colDiff = Math.abs(a.y - b.y);
-
-    return rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
-}
-
 /** The HTML display for a LetterGrid object. This also handles the logic for selecting letters.  */
 export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterGridContainerProps)
 {
@@ -37,6 +29,11 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
 
     /** When true, the user can not enter selection mode. */
     const [ canEnterSelectionMode, setCanEnterSelectionMode ] = useState<boolean>(true);
+    
+    const isLetterSelected = (letter: Letter) =>
+    {
+        return selectedLetters.some(selectedLetter => letter.x === selectedLetter.x && letter.y === selectedLetter.y);
+    }
 
     const enterSelectionMode = (letter: Letter) =>
     {
@@ -60,10 +57,7 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
 
 
         setSelectedLettersState(validWorld ? "hidden" : "invalid");
-
         setSelectionMoveActive(false);
-
-
         setCanEnterSelectionMode(false);
 
         setTimeout(() => 
@@ -82,31 +76,37 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
         }, 1000)
     }
 
-    const selectLetter = (letter: Letter) =>
-    {
-        if (selectionModeActive)
-        {
-            setSelectedLetters(previousLetters => 
+    const selectLetter = (letter: Letter) => {
+        if (!selectionModeActive) return;
+
+        setSelectedLetters(prev => {
+            if (prev.length === 0) return [letter];
+
+            const last = prev[prev.length - 1];
+
+            if (prev.length >= 2) {
+                const secondLast = prev[prev.length - 2];
+
+                if (letter.x === secondLast.x && letter.y === secondLast.y) 
+                {
+                    return prev.slice(0, -1); // remove last
+                }
+            }
+
+            // Prevent reselection
+            if (prev.some(l => l.x === letter.x && l.y === letter.y)) 
             {
-                // Prevent reseletion
-                if (previousLetters.find(selectedLetter => selectedLetter.x === letter.x && selectedLetter.y === letter.y)) 
-                {
-                    return previousLetters;
-                }
+                return prev;
+            }
 
-                const lastSelectedLetter = previousLetters[previousLetters.length - 1];
+            if (last.isAdjacent(letter)) 
+            {
+                return [...prev, letter];
+            }
 
-                if (isAdjacent(lastSelectedLetter, letter)) 
-                {
-                    return [...previousLetters, letter];
-                }
-
-                return previousLetters;
-            })
-
-        }
+            return prev;
+        });
     }
-
     useEffect(() =>
     {
         let currentWord = "";
@@ -139,7 +139,11 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
     return (
         <div className="relative inline-block">
             <svg className="absolute top-0 left-0 w-full h-full pointer-events-none p-4">
-                <LetterGridLines selectedLetters={selectedLetters}/>
+                <LetterGridLines 
+                    selectedLetters={selectedLetters}
+                    visible={selectedLettersState != "hidden"}
+                    color={selectedLettersState == "invalid" ? "oklch(88.5% 0.062 18.334)" : "oklch(58.5% 0.233 277.117)"}
+                />
             </svg>
 
             <div className="inline-grid grid-cols-5 gap-4 bg-slate-950 p-4 rounded-xl">
@@ -147,15 +151,10 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
                     letters.map((letter) =>
                     (
                         <LetterContainer
-                            letter={letter}
-                            state=
-                            {   
-                                selectedLetters.some(selectedLetter => letter.x === selectedLetter.x && letter.y === selectedLetter.y) ? 
-                                    selectedLettersState : 
-                                    "default"
-                            }
-                            onMouseDown={() => enterSelectionMode(letter)}
-                            onMouseEnter={() => selectLetter(letter)}
+                            letter ={ letter }
+                            state = { isLetterSelected(letter) ? selectedLettersState : "default" }
+                            onMouseDown = { () => enterSelectionMode(letter) }
+                            onMouseEnter = { () => selectLetter(letter) }
                         />
                     ))
                 }

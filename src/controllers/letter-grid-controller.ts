@@ -51,7 +51,13 @@ export function getWeightedRandomLetter(): Letter {
     const randomIndex = Math.floor(Math.random() * weightedLetters.length);
     const character = weightedLetters[randomIndex];
 
-    return new Letter(character, letterPoints[character], 0, 0);
+    const letter = new Letter(character, letterPoints[character], 0, 0);
+
+                if (Math.random() < 0.1)
+                {
+                    letter.multiplier = 2;
+                }
+    return letter;
 }
 
 export class Letter
@@ -61,6 +67,9 @@ export class Letter
 
     /** The points awarded by the letter. */
     public points: number;
+
+    /** The point multiplier. */
+    public multiplier: number = 1;
 
     /** The row of the letter. */
     public x: number;
@@ -75,6 +84,24 @@ export class Letter
         this.x = x;
         this.y = y;
     }
+
+
+    /**
+     * Returns true if the two letter objects are adjacent.
+     * @param letter The letter to check.
+     */
+    public isAdjacent(letter: Letter): Boolean
+    {
+        const a = this;
+        const b = letter;
+        const rowDiff = Math.abs(a.x- b.x);
+        const colDiff = Math.abs(a.y - b.y);
+
+       const adjacent = rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
+
+       return adjacent;
+    }
+
 }
 
 
@@ -175,6 +202,7 @@ export class LetterGrid
                 //}
 
                 const letter = getWeightedRandomLetter();
+
 
                 this.setLetter(x, y, letter);
             }
