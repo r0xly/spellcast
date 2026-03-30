@@ -1,5 +1,9 @@
-type WordPreviewProps = {
+type WordPreviewProps = 
+{
+  /** The word to be displayed. */
   word: string;
+
+  /** The points given out by the word. */
   points: number;
 };
 

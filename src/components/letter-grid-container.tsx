@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getWeightedRandomLetter, Letter, type LetterGrid } from "../controllers/letter-grid-controller"
+import { getWeightedRandomLetter, getWordPoints, getWordString, Letter, type LetterGrid } from "../controllers/letter-grid-controller"
 import { LetterContainer, type LetterContainerState } from "./letter-container";
 import { isEnglishWord } from "../util/dictionary";
 import { LetterGridLines } from "./letter-grid-lines";
@@ -7,8 +7,13 @@ import { LetterGridLines } from "./letter-grid-lines";
 
 type LetterGridContainerProps =
 {
+    /** The LetterGrid object whose data is represented in the container componenet. */
     letterGrid: LetterGrid;
+
+    /** A function to set the current word whenever the selection is updated. */
     setWord: (word: string) => void;
+
+    /** A function to set the current poitns of a word whenever the selection is updated. */
     setPoints: (word: number) => void;
 } 
 
@@ -30,11 +35,22 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
     /** When true, the user can not enter selection mode. */
     const [ canEnterSelectionMode, setCanEnterSelectionMode ] = useState<boolean>(true);
     
+    /**
+     * Returns true if the letter is currently selected.
+     * 
+     * @param letter The letter to check for.
+     * @returns 
+     */
     const isLetterSelected = (letter: Letter) =>
     {
         return selectedLetters.some(selectedLetter => letter.x === selectedLetter.x && letter.y === selectedLetter.y);
     }
 
+    /**
+     * Allows the user to select letters by entering selection mode.
+     * 
+     * @param letter The initial letter selected.
+     */
     const enterSelectionMode = (letter: Letter) =>
     {
         if (!selectionModeActive && canEnterSelectionMode)
@@ -45,6 +61,11 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
         }
     }
 
+    /**
+     * Exits out of selection mode.
+     * 
+     * @returns 
+     */
     const exitSelectionMode = () =>
     {
         if (!selectionModeActive)
@@ -52,11 +73,11 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
             return;
         }
 
-        const currentWord = selectedLetters.map(l => l.character).join("");    
-        const validWorld = isEnglishWord(currentWord);
+        const wordString: string = getWordString(selectedLetters);
+        const isValidWorld = isEnglishWord(wordString);
 
 
-        setSelectedLettersState(validWorld ? "hidden" : "invalid");
+        setSelectedLettersState(isValidWorld ? "hidden" : "invalid");
         setSelectionMoveActive(false);
         setCanEnterSelectionMode(false);
 
@@ -65,7 +86,7 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
             setSelectedLetters([]);
             setCanEnterSelectionMode(true);
 
-            if (validWorld) 
+            if (isValidWorld) 
             {
                 for (const letter of selectedLetters) 
                 {
@@ -77,7 +98,10 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
     }
 
     const selectLetter = (letter: Letter) => {
-        if (!selectionModeActive) return;
+        if (!selectionModeActive) 
+        {
+            return;
+        }
 
         setSelectedLetters(prev => {
             if (prev.length === 0) return [letter];
@@ -109,18 +133,14 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
     }
     useEffect(() =>
     {
-        let currentWord = "";
-        let points = 0;
-
-        for (const letter of selectedLetters)
-        {
-            currentWord += letter.character;
-            points +=  letter.points; 
-        }
+        let currentWord: string = getWordString(selectedLetters);
+        let points: number = getWordPoints(selectedLetters);
 
         setWord(currentWord);
         setPoints(points);
 
+
+        // Updates the letter grid container whenever the word is updated on the LetterGrid object.
         letterGrid.onUpdate = () =>
         {
             setLetters(letterGrid.getsLetters());

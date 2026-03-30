@@ -30,6 +30,43 @@ export const letterPoints: Record<string, number> =
 };
 
 
+/** 
+ * Returns the amount of points given out by a word. 
+ */
+export function getWordPoints(word: Letter[]): number
+{
+    let totalPoints;            // The total amount of points given out by a word (including the multiplier)
+    let basePoints = 0;         // The amount of points given without any multipliers.
+    let multiplier = 1;         // The point multiplier.
+
+    for (const letter of word)
+    {
+        basePoints += letter.points;
+        multiplier *= letter.multiplier;
+    }
+
+    totalPoints = basePoints * multiplier;
+
+    return totalPoints;
+}
+
+/**
+ * Returns the string a word makes up.
+ * @param word List of letters that make up a word.
+ * @returns The string.
+ */
+export function getWordString(word: Letter[]): string
+{
+    let wordString = "";
+
+    for (const letter of word)
+    {
+        wordString += letter.character;
+    }
+
+    return wordString;
+}
+
 /**
  * Generates a weighted random letter based on letter points.
  * Lower points = higher chance, higher points = lower chance.
@@ -60,6 +97,7 @@ export function getWeightedRandomLetter(): Letter {
     return letter;
 }
 
+/** Represents a Letterr on the LetterGrid. */
 export class Letter
 {
     /** The singular character assoistated with the letter object. */
@@ -71,11 +109,11 @@ export class Letter
     /** The point multiplier. */
     public multiplier: number = 1;
 
-    /** The row of the letter. */
-    public x: number;
+    /** The row of the letter. A value of -1 means the position was not set. */
+    public x: number = -1;
 
-    /** The column of the letter. */
-    public y: number;
+    /** The column of the letter. A value of -1 means the position was not set. */
+    public y: number = -1;
 
     constructor(character: string, points: number, x: number, y: number)
     {
@@ -120,7 +158,6 @@ export class LetterGrid
     
     /** The numbers of colums in the grid. */
     private columns: number;
-
 
     /** A method that runs everytime the letter grid is updated. */
     onUpdate: (() => void) | undefined;

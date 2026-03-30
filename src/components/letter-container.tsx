@@ -1,20 +1,25 @@
 import type { Letter } from "../controllers/letter-grid-controller"
 
-
 export type LetterContainerState = "default" | "selected" | "invalid" | "hidden";
 
 type LetterContainerProps =
 {
+    /** The current dispaly state of the letter container. */
     state: LetterContainerState; 
+    
+    /** The letter object represented by the letter container. */
     letter: Letter;
+
+    /** The function to be ran when the letter container is clicked. */
     onMouseDown: () => void;
+
+    /** The function to be ran when the mouse hovers of the letter container. */
     onMouseEnter: () => void;
 } 
 
 /** A component that displays a character and the amount of points it will give. */
 export function LetterContainer({ letter , state, onMouseDown, onMouseEnter }: LetterContainerProps)
 {
-    //const [selected, setSelected] = useState(false);
     let stateClasses = "";
 
     if (state === "selected") 
@@ -29,8 +34,7 @@ export function LetterContainer({ letter , state, onMouseDown, onMouseEnter }: L
     {
         stateClasses = "opacity-0";
     } 
-    // Default
-    else 
+    else   // Default
     {
         stateClasses = "bg-blue-100 shadow-[inset_0_-5px_0_theme(colors.mauve.400)] text-black";
     }
@@ -39,9 +43,12 @@ export function LetterContainer({ letter , state, onMouseDown, onMouseEnter }: L
         <div 
             className=
             {
-                `relative
-                size-16 rounded-lg py-5 box-border m-0 select-none transition ease-in-out duration-100
-                ${stateClasses}`
+                `
+                relative box-border rounded-lg size-16 py-5 m-0 
+                select-none 
+                transition ease-in-out duration-100
+                ${stateClasses}
+                `
             }
             onMouseDown={onMouseDown}
             onMouseEnter={onMouseEnter}
