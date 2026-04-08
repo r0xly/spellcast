@@ -1,4 +1,4 @@
-import type { Letter } from "../controllers/letter-grid-controller";
+import type { Letter } from "../../controllers/letter-grid-controller";
 
 type LetterGridLinesProps = 
 {

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
-import { getWeightedRandomLetter, getWordPoints, getWordString, Letter, type LetterGrid } from "../controllers/letter-grid-controller"
+import { getWeightedRandomLetter, getWordPoints, getWordString, Letter, type LetterGrid } from "../../controllers/letter-grid-controller"
 import { LetterContainer, type LetterContainerState } from "./letter-container";
-import { isEnglishWord } from "../util/dictionary";
+import { isEnglishWord } from "../../util/dictionary";
 import { LetterGridLines } from "./letter-grid-lines";
+import { gameController } from "../../App";
 
 
 type LetterGridContainerProps =
@@ -74,8 +75,8 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
         }
 
         const wordString: string = getWordString(selectedLetters);
-        const isValidWorld = isEnglishWord(wordString);
-
+        const isValidWorld: boolean = isEnglishWord(wordString);
+        const points: number = getWordPoints(selectedLetters);
 
         setSelectedLettersState(isValidWorld ? "hidden" : "invalid");
         setSelectionMoveActive(false);
@@ -92,6 +93,8 @@ export function LetterGridContrainer({ letterGrid, setWord, setPoints }: LetterG
                 {
                     letterGrid.setLetter(letter.x, letter.y, getWeightedRandomLetter());
                 }
+
+                gameController.playTurn(points, wordString);
             }
 
         }, 1000)

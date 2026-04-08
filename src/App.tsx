@@ -1,21 +1,54 @@
-import { useState } from "react";
-import { LetterGridContrainer } from "./components/letter-grid-container";
+import { useEffect, useState } from "react";
+import { LetterGridContrainer } from "./components/letter-grid/letter-grid-container";
 import { WordPreview } from "./components/word-preview";
 import { LetterGrid } from "./controllers/letter-grid-controller";
-import { PlayerFrame } from "./components/player-frame";
+import { PlayerListContainer } from "./components/player-list/player-list-container";
+import type { PlayerData } from "./types/player-data";
+import { GameController } from "./controllers/game-controller";
 
 const letterGrid = new LetterGrid(5, 5);
 
+export const gameController = new GameController(5);
+
 export function App() {
-  const [word, setWord] = useState("");
-  const [points, setPoints] = useState(0);
+  const [ word, setWord ] = useState("");
+  const [ points, setPoints ] = useState(0);
+  const [ playerData, setPlayerData ] = useState<PlayerData[]>([]);
+  const [ currentlyActivePlayer, setCurrentlyAcitvePlayer ] = useState<PlayerData>();
+
+
+
+
+  useEffect(() => 
+  {
+    setPlayerData(gameController.getPlayers());
+    for (const player of gameController.getPlayers()) {
+      if (player.isPlaying) {
+        setCurrentlyAcitvePlayer(player);
+      }
+    }
+
+    gameController.playerDataUpdated = (players) => 
+    {
+      setPlayerData(players);
+
+      for (const player of players) 
+      {
+        if (player.isPlaying) 
+        {
+          setCurrentlyAcitvePlayer(player);
+        }
+      }
+    }
+    
+  }, []);
 
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-slate-800 relative">
 
       {/* Centered content */}
       <div className="relative">
-        <WordPreview word={word} points={points} />
+        <WordPreview word={word || `${currentlyActivePlayer?.name}'S TURN`} points={points} />
 
         <LetterGridContrainer
           letterGrid={letterGrid}
@@ -24,16 +57,8 @@ export function App() {
         />
 
         {/* Right panel */}
-        <div className="absolute left-full ml-8 top-1/2 -translate-y-1/2 w-64 p-3 bg-slate-950 rounded-xl">
-          <span className="w-full text-white">
-            Round 1/5
-          </span>
-
-          <div className="flex flex-col gap-3 mt-3">
-            <PlayerFrame playerPoints={10} playerName={"Player 1"} isPlaying={false} previousWord={"tree"} previousWordPoints={4} />
-            <PlayerFrame playerPoints={100} playerName={"Player 2"} isPlaying={false} previousWord={"a"} previousWordPoints={1} />
-            <PlayerFrame playerPoints={24} playerName={"Player 4"} isPlaying={true} previousWord={undefined} previousWordPoints={0} />
-          </div>
+        <div className="absolute left-full ml-8 top-1/2 -translate-y-1/2">
+          <PlayerListContainer playerData={playerData}/>
         </div>
 
       </div>

@@ -1,4 +1,4 @@
-import type { Letter } from "../controllers/letter-grid-controller"
+import type { Letter } from "../../controllers/letter-grid-controller"
 
 export type LetterContainerState = "default" | "selected" | "invalid" | "hidden";
 
